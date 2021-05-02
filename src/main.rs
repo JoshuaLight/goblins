@@ -37,44 +37,92 @@ impl RandWeighted {
         0
     }
 
-    pub fn halved_naive_weighted_index(
+    pub fn fenwick_weighted_index(
         &mut self,
         items: &Vec<u32>,
         total: u32,
-        half_total: u32,
+        fenwick: &FenwickTree,
     ) -> usize {
-        let mut need = self.rng.gen_range(1..=total);
+        let need = self.rng.gen_range(1..=total);
 
-        let half = (items.len() - 1) / 2;
-        let in_lesser_half = need <= half_total;
+        self.fenwick_weighted_index_range(items, 0, items.len() - 1, need, fenwick)
+    }
 
-        let from = if in_lesser_half { 0 } else { half + 1 };
-        let to = if in_lesser_half {
-            half
-        } else {
-            items.len() - 1
-        };
+    pub fn fenwick_weighted_index_range(
+        &mut self,
+        items: &Vec<u32>,
+        from: usize,
+        to: usize,
+        need: u32,
+        fenwick: &FenwickTree,
+    ) -> usize {
+        let count = to - from + 1;
 
-        if !in_lesser_half {
-            need -= half_total;
+        // [x] case: `to` == `from`.
+        if count == 1 {
+            return from; // or `to`.
         }
 
-        // println!("Need: {:?}, looking in: {:?}", need, range);
-
-        let mut current = 0;
-        let mut i = from;
-
-        while i <= to {
-            current += items[i];
-
-            if current >= need {
-                return i;
+        // [x, y] case: `y` if `need` is greater than `x`, `x` otherwise.
+        if count == 2 {
+            if need > items[from] {
+                return to;
+            } else {
+                return from;
             }
-
-            i += 1;
         }
 
-        0
+        // `[x, ..., z]` case: divide vector by half.
+        let half = from + (to - from) / 2;
+        let half_sum = fenwick.sum(from, half);
+
+        if need <= half_sum {
+            self.fenwick_weighted_index_range(items, from, half, need, fenwick)
+        } else {
+            self.fenwick_weighted_index_range(items, half, to, need, fenwick)
+        }
+    }
+}
+
+struct FenwickTree {
+    tree: Vec<u32>,
+}
+
+impl FenwickTree {
+    pub fn new(size: usize) -> Self {
+        Self {
+            tree: vec![0; size],
+        }
+    }
+
+    pub fn increase(&mut self, index: usize, delta: u32) {
+        let mut i = index;
+
+        while i < self.tree.len() {
+            self.tree[i] += delta;
+            i |= i + 1;
+        }
+    }
+
+    pub fn sum(&self, from: usize, to: usize) -> u32 {
+        let sum_from = if from == 0 { 0 } else { self.sum_at(from - 1) };
+        let sum_to = self.sum_at(to);
+
+        sum_to - sum_from
+    }
+
+    fn sum_at(&self, index: usize) -> u32 {
+        let mut sum = 0;
+        let mut i = index as i32;
+
+        while i >= 0 {
+            sum += self.tree[i as usize];
+
+            i &= i + 1;
+            i -= 1;
+        }
+
+        sum
     }
 }
 
@@ -85,38 +133,29 @@ fn main() {
 
     let mut random = RandWeighted::new();
     let mut population: Vec<u32> = Vec::with_capacity(STEPS as usize);
+    let mut fenwick = FenwickTree::new(STEPS as usize);
 
     // Add first person.
     population.push(INITIAL_CAPITAL);
+    fenwick.increase(0, INITIAL_CAPITAL);
 
     let mut max = INITIAL_CAPITAL;
-    let mut total = INITIAL_CAPITAL;
-    let mut half_total = INITIAL_CAPITAL;
-
-    let mut half_cursor = 0;
-    let mut half_shifted = false;
 
     let now = Instant::now();
 
     for i in 0..(STEPS - 1) {
-        total = INITIAL_CAPITAL + i * 2 * INCOME;
-
-        let half = (i / 2) as usize;
-
-        // println!("Population: {:?}", population);
-        // println!("Total: {:?}", total);
-        // println!("Half total: {:?}", half_total);
+        let total = INITIAL_CAPITAL + i * 2 * INCOME;
 
         // Pick random human from the population.
-        let human = random.halved_naive_weighted_index(&population, total, half_total);
+        // 1. Naive.
+        // let human = random.naive_weighted_index(&population, total);
+
+        // 2. Fenwick.
+        let human = random.fenwick_weighted_index(&population, total, &fenwick);
 
         // Increase theirs capital.
         population[human] += INCOME;
-
-        // Selected human from the first half.
-        if human <= half {
-            half_total += INCOME;
-        }
+        fenwick.increase(human, INCOME);
 
         // Recalculate the maximum.
         if population[human] > max {
@@ -125,14 +164,7 @@ fn main() {
 
         // Also add new human to the population.
         population.push(INITIAL_CAPITAL);
-
-        // Check if new guy added new item to the first half.
-        if half_shifted {
-            half_cursor += 1;
-            half_total += population[half_cursor];
-        }
-
-        half_shifted = !half_shifted;
+        fenwick.increase(population.len() - 1, INITIAL_CAPITAL);
     }
 
     let elapsed = now.elapsed();
