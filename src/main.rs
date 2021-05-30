@@ -23,17 +23,20 @@ fn main() {
 
     let now = Instant::now();
 
-    model.initialize();
+    model.init();
 
     for _ in 0..(STEPS - 1) {
-        model.simulate();
+        model.sim();
     }
+
+    model.finish();
 
     let elapsed = now.elapsed();
 
     println!("---");
     println!("Population size: {}", STEPS);
     println!("Max capital: {}", model.max_capital);
+    println!("Died: {}", model.died);
     println!("---");
     println!("Duration: {:#?} ms.", elapsed.whole_milliseconds());
 }

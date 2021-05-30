@@ -27,11 +27,13 @@ impl<W: Weight> RngFenwickTree<W> {
         }
     }
 
+    #[inline]
     pub fn push(&mut self, x: W) {
         self.tree.add(self.len, x).unwrap();
         self.len += 1;
     }
 
+    #[inline]
     pub fn add(&mut self, i: usize, x: W) {
         self.tree.add(i, x).unwrap();
     }

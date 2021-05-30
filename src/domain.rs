@@ -1,4 +1,4 @@
-use rand::RngCore;
+use rand::{Rng, RngCore};
 
 use crate::random::{RngFenwickTree, Weight, WeightedRandom};
 
@@ -27,6 +27,7 @@ pub struct Model<R: RngCore, W: Weight> {
     fenwick: RngFenwickTree<W>,
 
     pub max_capital: Currency,
+    pub died: usize,
 }
 
 impl<R: RngCore> Model<R, Currency> {
@@ -40,33 +41,56 @@ impl<R: RngCore> Model<R, Currency> {
             fenwick: RngFenwickTree::with_capacity(max_steps),
 
             max_capital: 1,
+            died: 0,
         }
     }
 
-    pub fn initialize(&mut self) {
+    #[inline]
+    pub fn init(&mut self) {
         self.add_new_human();
     }
 
-    pub fn simulate(&mut self) {
+    #[inline]
+    pub fn sim(&mut self) {
         let human = self.fenwick.weighted_index(&mut self.options.rng);
 
         self.add_income(human);
-
-        if self.people.money[human] > self.max_capital {
-            self.max_capital = self.people.money[human];
-        }
-
         self.add_new_human();
+
+        self.sim_death();
     }
 
+    #[inline]
+    pub fn finish(&mut self) {
+        self.recalculate_max();
+    }
+
+    #[inline]
     fn add_income(&mut self, human: usize) {
         self.people.add_income(human, self.options.income);
         self.fenwick.add(human, self.options.income)
     }
 
+    #[inline]
     fn add_new_human(&mut self) {
         self.people.add_new_human(self.options.initial_capital);
         self.fenwick.push(self.options.initial_capital);
+    }
+
+    #[inline]
+    fn sim_death(&mut self) {
+        let someone_died = self.options.rng.gen_bool(self.options.p_death);
+        if someone_died {
+            let human = self.options.rng.gen_range(0..self.people.count());
+
+            self.people.money[human] = 0;
+            self.died += 1;
+        }
+    }
+
+    #[inline]
+    fn recalculate_max(&mut self) {
+        self.max_capital = *self.people.money.iter().max().unwrap_or(&0);
     }
 }
 
@@ -75,16 +99,24 @@ pub struct People {
 }
 
 impl People {
+    #[inline]
     pub fn with_capacity(n: usize) -> Self {
         People {
             money: Vec::with_capacity(n),
         }
     }
 
+    #[inline]
+    pub fn count(&self) -> usize {
+        self.money.len()
+    }
+
+    #[inline]
     pub fn add_new_human(&mut self, capital: Currency) {
         self.money.push(capital);
     }
 
+    #[inline]
     pub fn add_income(&mut self, human: usize, income: Currency) {
         self.money[human] += income;
     }
