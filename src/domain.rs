@@ -79,6 +79,7 @@ impl<R: RngCore> Model<R, Currency> {
     fn sim_death(&mut self) {
         let someone_died = self.options.rng.gen_bool(self.options.p_death);
         if someone_died {
+            // TODO: Currently, people can die more than one time.
             let human = self.options.rng.gen_range(0..self.people.count());
 
             self.kill(human);
