@@ -26,8 +26,8 @@ pub struct ModelOptions<R: RngCore> {
 pub struct Model<R: RngCore> {
     options: ModelOptions<R>,
 
-    money: WeightVec<isize>,
-    alive: WeightVec<isize>,
+    gold: WeightVec<isize>,
+    age: WeightVec<isize>,
 
     dead_count: usize,
 }
@@ -35,8 +35,8 @@ pub struct Model<R: RngCore> {
 impl<R: RngCore> Model<R> {
     pub fn new(options: ModelOptions<R>) -> Self {
         Model {
-            money: WeightVec::with_capacity(options.max_steps),
-            alive: WeightVec::with_capacity(options.max_steps),
+            gold: WeightVec::with_capacity(options.max_steps),
+            age: WeightVec::with_capacity(options.max_steps),
 
             options,
 
@@ -45,7 +45,7 @@ impl<R: RngCore> Model<R> {
     }
 
     pub fn init(&mut self) {
-        self.add_new_human();
+        self.add_new_goblin();
     }
 
     pub fn sim(&mut self) {
@@ -58,9 +58,9 @@ impl<R: RngCore> Model<R> {
     fn sim_income(&mut self) {
         let lucky = self.options.rng.gen_bool(self.options.p_income);
         if lucky {
-            let human = self.money.random_index(&mut self.options.rng);
-            if let Some(human) = human {
-                self.add_income(human);
+            let goblin = self.gold.random_index(&mut self.options.rng);
+            if let Some(goblin) = goblin {
+                self.add_income(goblin);
             }
         }
     }
@@ -68,17 +68,17 @@ impl<R: RngCore> Model<R> {
     fn sim_birth(&mut self) {
         let born = self.options.rng.gen_bool(self.options.p_birth);
         if born {
-            self.add_new_human();
+            self.add_new_goblin();
         }
     }
 
     fn sim_death(&mut self) {
         let died = self.options.rng.gen_bool(self.options.p_death);
         if died {
-            let human = self.alive.random_index(&mut self.options.rng);
-            if let Some(human) = human {
-                self.money.reset(human);
-                self.alive.reset(human);
+            let goblin = self.age.random_index(&mut self.options.rng);
+            if let Some(goblin) = goblin {
+                self.gold.reset(goblin);
+                self.age.reset(goblin);
 
                 self.dead_count += 1;
             }
@@ -86,8 +86,8 @@ impl<R: RngCore> Model<R> {
     }
 
     fn sim_ageing(&mut self) {
-        for i in 0..self.alive.vec.len() {
-            self.alive.add(i, 1);
+        for i in 0..self.age.vec.len() {
+            self.age.add(i, 1);
         }
     }
 
@@ -95,13 +95,13 @@ impl<R: RngCore> Model<R> {
         Report::from_model(self)
     }
 
-    fn add_new_human(&mut self) {
-        self.money.push(self.options.initial_capital);
-        self.alive.push(1);
+    fn add_new_goblin(&mut self) {
+        self.gold.push(self.options.initial_capital);
+        self.age.push(1);
     }
 
-    fn add_income(&mut self, human: usize) {
-        self.money.add(human, self.options.income);
+    fn add_income(&mut self, goblin: usize) {
+        self.gold.add(goblin, self.options.income);
     }
 }
 
@@ -113,26 +113,26 @@ pub struct Report {
     mean: isize,
     stdev: f64,
 
-    money: Vec<isize>,
+    gold: Vec<isize>,
 }
 
 impl Report {
     pub fn from_model<R: RngCore>(m: Model<R>) -> Self {
-        let money = &m.money.vec;
-        let n = money.len();
-        let mean = money.iter().sum::<isize>() / n as isize;
+        let gold = &m.gold.vec;
+        let n = gold.len();
+        let mean = gold.iter().sum::<isize>() / n as isize;
 
         Self {
             alive_count: n - m.dead_count,
             dead_count: m.dead_count,
 
-            max: *money.iter().max().unwrap_or(&0),
+            max: *gold.iter().max().unwrap_or(&0),
             mean,
-            stdev: (money.iter().map(|x| (x - mean).pow(2)).sum::<isize>() as f64
+            stdev: (gold.iter().map(|x| (x - mean).pow(2)).sum::<isize>() as f64
                 / ((n - 1) as f64))
                 .sqrt(),
 
-            money: m.money.vec,
+            gold: m.gold.vec,
         }
     }
 
@@ -145,7 +145,7 @@ impl Report {
     }
 
     pub fn draw(&self) {
-        let counter = self.money.iter().collect::<Counter<_>>();
+        let counter = self.gold.iter().collect::<Counter<_>>();
         let x: Vec<isize> = counter.keys().map(|x| **x).collect();
         let y: Vec<isize> = counter.values().map(|x| *x as isize).collect();
 
