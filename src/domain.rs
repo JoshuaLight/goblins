@@ -1,10 +1,8 @@
 use rand::{Rng, RngCore};
 
-use crate::random::{RngFenwickTree, Weight, WeightedRandom};
+use crate::random::{Weight, WeightVec};
 
-pub type Currency = isize;
-
-impl Weight for Currency {
+impl Weight for isize {
     fn one() -> Self {
         1
     }
@@ -13,39 +11,29 @@ impl Weight for Currency {
 pub struct ModelOptions<R: RngCore> {
     pub max_steps: usize,
 
-    pub initial_capital: Currency,
-    pub income: Currency,
+    pub initial_capital: isize,
+    pub income: isize,
 
     pub rng: R,
     pub p_death: f64,
 }
 
-pub struct Model<R: RngCore, W: Weight> {
+pub struct Model<R: RngCore> {
     options: ModelOptions<R>,
 
-    people: People,
-    fenwick: RngFenwickTree<W>,
-
-    pub max_capital: Currency,
-    pub died: usize,
-    pub mean: Currency,
-    pub stdev: f64,
+    money: WeightVec<isize>,
+    alive: WeightVec<isize>,
 }
 
-impl<R: RngCore> Model<R, Currency> {
+impl<R: RngCore> Model<R> {
     pub fn new(options: ModelOptions<R>) -> Self {
         let max_steps = options.max_steps;
 
         Model {
             options,
 
-            people: People::with_capacity(max_steps),
-            fenwick: RngFenwickTree::with_capacity(max_steps),
-
-            max_capital: 1,
-            died: 0,
-            mean: 0,
-            stdev: 0.0,
+            money: WeightVec::with_capacity(max_steps),
+            alive: WeightVec::with_capacity(max_steps),
         }
     }
 
@@ -54,7 +42,7 @@ impl<R: RngCore> Model<R, Currency> {
     }
 
     pub fn sim(&mut self) {
-        let human = self.fenwick.weighted_index(&mut self.options.rng);
+        let human = self.money.random_index(&mut self.options.rng);
 
         self.add_income(human);
         self.add_new_human();
@@ -66,74 +54,23 @@ impl<R: RngCore> Model<R, Currency> {
         Report::from_model(self)
     }
 
-    fn add_income(&mut self, human: usize) {
-        self.people.add_income(human, self.options.income);
-        self.fenwick.add(human, self.options.income)
+    fn add_new_human(&mut self) {
+        self.money.push(self.options.initial_capital);
+        self.alive.push(1);
     }
 
-    fn add_new_human(&mut self) {
-        self.people.add_new_human(self.options.initial_capital);
-        self.fenwick.push(self.options.initial_capital);
+    fn add_income(&mut self, human: usize) {
+        self.money.add(human, self.options.income);
     }
 
     fn sim_death(&mut self) {
         let someone_died = self.options.rng.gen_bool(self.options.p_death);
         if someone_died {
-            // TODO: Currently, people can die more than one time.
-            let human = self.options.rng.gen_range(0..self.people.count());
+            let human = self.alive.random_index(&mut self.options.rng);
 
-            self.kill(human);
-            self.died += 1;
+            self.money.reset(human);
+            self.alive.reset(human);
         }
-    }
-
-    fn kill(&mut self, human: usize) {
-        let capital = self.people.money[human];
-
-        self.people.money[human] = 0;
-        self.fenwick.add(human, -capital);
-    }
-
-    // For debugging.
-    fn naive_weighted_index(&mut self) -> usize {
-        let total = self.people.money.iter().sum::<Currency>();
-        let need = self.options.rng.gen_range(1..=total);
-
-        let mut current = 0;
-
-        for i in 0..self.people.count() {
-            current += self.people.money[i];
-
-            if current >= need {
-                return i;
-            }
-        }
-
-        0
-    }
-}
-
-pub struct People {
-    money: Vec<Currency>,
-}
-
-impl People {
-    pub fn with_capacity(n: usize) -> Self {
-        People {
-            money: Vec::with_capacity(n),
-        }
-    }
-
-    pub fn count(&self) -> usize {
-        self.money.len()
-    }
-
-    pub fn add_new_human(&mut self, capital: Currency) {
-        self.money.push(capital);
-    }
-
-    pub fn add_income(&mut self, human: usize, income: Currency) {
-        self.money[human] += income;
     }
 }
 
@@ -141,30 +78,30 @@ pub struct Report {
     alive_count: usize,
     dead_count: usize,
 
-    max: Currency,
-    mean: Currency,
+    max: isize,
+    mean: isize,
     stdev: f64,
 
-    money: Vec<Currency>,
+    money: Vec<isize>,
 }
 
 impl Report {
-    pub fn from_model<R: RngCore, W: Weight>(m: Model<R, W>) -> Self {
-        let n = m.people.count();
-        let money = &m.people.money;
-        let mean = money.iter().sum::<Currency>() / n as Currency;
+    pub fn from_model<R: RngCore>(m: Model<R>) -> Self {
+        let money = &m.money.vec;
+        let n = money.len();
+        let mean = money.iter().sum::<isize>() / n as isize;
 
         Self {
-            alive_count: money.iter().map(|x| x > &0).count(),
-            dead_count: money.iter().map(|x| x == &0).count(),
+            alive_count: money.iter().filter(|x| x > &&0).count(),
+            dead_count: money.iter().filter(|x| x == &&0).count(),
 
             max: *money.iter().max().unwrap_or(&0),
             mean,
-            stdev: (money.iter().map(|x| (x - mean).pow(2)).sum::<Currency>() as f64
+            stdev: (money.iter().map(|x| (x - mean).pow(2)).sum::<isize>() as f64
                 / ((n - 1) as f64))
                 .sqrt(),
 
-            money: m.people.money,
+            money: m.money.vec,
         }
     }
 

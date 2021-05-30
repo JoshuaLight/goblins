@@ -1,6 +1,6 @@
 use std::{
     fmt::Debug,
-    ops::{Add, AddAssign, SubAssign},
+    ops::{Add, AddAssign, Neg, SubAssign},
 };
 
 use rand::{distributions::uniform::SampleUniform, prelude::*};
@@ -8,7 +8,15 @@ use rand::{distributions::uniform::SampleUniform, prelude::*};
 use fenwick_tree::FenwickTree;
 
 pub trait Weight:
-    Default + Debug + Copy + AddAssign + SubAssign + Add<Output = Self> + PartialOrd + SampleUniform
+    Default
+    + Debug
+    + Copy
+    + AddAssign
+    + SubAssign
+    + Add<Output = Self>
+    + Neg<Output = Self>
+    + PartialOrd
+    + SampleUniform
 {
     fn one() -> Self;
 }
@@ -18,14 +26,14 @@ pub trait WeightedRandom<W: Weight> {
 }
 
 pub struct RngFenwickTree<W: Weight> {
-    tree: FenwickTree<W>,
+    pub tree: FenwickTree<W>,
     len: usize,
 }
 
 impl<W: Weight> RngFenwickTree<W> {
-    pub fn with_capacity(l: usize) -> Self {
+    pub fn with_capacity(n: usize) -> Self {
         Self {
-            tree: FenwickTree::with_len(l),
+            tree: FenwickTree::with_len(n),
             len: 0,
         }
     }
@@ -61,5 +69,40 @@ impl<W: Weight> WeightedRandom<W> for RngFenwickTree<W> {
         }
 
         a
+    }
+}
+
+pub struct WeightVec<W: Weight> {
+    pub vec: Vec<W>,
+    tree: RngFenwickTree<W>,
+}
+
+impl<W: Weight> WeightVec<W> {
+    pub fn with_capacity(n: usize) -> Self {
+        Self {
+            vec: Vec::with_capacity(n),
+            tree: RngFenwickTree::with_capacity(n),
+        }
+    }
+
+    pub fn random_index<R: RngCore>(&self, rng: &mut R) -> usize {
+        self.tree.weighted_index(rng)
+    }
+
+    pub fn push(&mut self, x: W) {
+        self.vec.push(x);
+        self.tree.push(x);
+    }
+
+    pub fn add(&mut self, i: usize, x: W) {
+        self.vec[i] += x;
+        self.tree.add(i, x);
+    }
+
+    pub fn reset(&mut self, i: usize) {
+        let x = self.vec[i];
+
+        self.vec[i] = W::default();
+        self.tree.add(i, -x);
     }
 }
