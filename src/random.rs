@@ -1,11 +1,14 @@
-use std::ops::{Add, AddAssign, SubAssign};
+use std::{
+    fmt::Debug,
+    ops::{Add, AddAssign, SubAssign},
+};
 
 use rand::{distributions::uniform::SampleUniform, prelude::*};
 
 use fenwick_tree::FenwickTree;
 
 pub trait Weight:
-    Default + Copy + AddAssign + SubAssign + Add<Output = Self> + PartialOrd + SampleUniform
+    Default + Debug + Copy + AddAssign + SubAssign + Add<Output = Self> + PartialOrd + SampleUniform
 {
     fn one() -> Self;
 }
@@ -27,13 +30,11 @@ impl<W: Weight> RngFenwickTree<W> {
         }
     }
 
-    #[inline]
     pub fn push(&mut self, x: W) {
         self.tree.add(self.len, x).unwrap();
         self.len += 1;
     }
 
-    #[inline]
     pub fn add(&mut self, i: usize, x: W) {
         self.tree.add(i, x).unwrap();
     }
@@ -43,16 +44,16 @@ impl<W: Weight> WeightedRandom<W> for RngFenwickTree<W> {
     fn weighted_index<R: RngCore>(&self, rng: &mut R) -> usize {
         let total = self.tree.sum(0..self.len).unwrap();
 
-        let mut need = rng.gen_range(W::one()..=total);
+        let mut sum = rng.gen_range(W::one()..=total);
         let mut a = 0;
         let mut b = self.len;
 
-        while a != b - 1 {
+        while a < b - 1 {
             let half = (a + b) / 2;
-            let sum = self.tree.sum(a..half).unwrap();
+            let s = self.tree.sum(a..half).unwrap();
 
-            if sum < need {
-                need -= sum;
+            if s < sum {
+                sum -= s;
                 a = half;
             } else {
                 b = half;

@@ -49,12 +49,10 @@ impl<R: RngCore> Model<R, Currency> {
         }
     }
 
-    #[inline]
     pub fn init(&mut self) {
         self.add_new_human();
     }
 
-    #[inline]
     pub fn sim(&mut self) {
         let human = self.fenwick.weighted_index(&mut self.options.rng);
 
@@ -64,42 +62,53 @@ impl<R: RngCore> Model<R, Currency> {
         self.sim_death();
     }
 
-    #[inline]
-    pub fn finish(&mut self) {
-        let n = self.people.count();
-        let money = &self.people.money;
-
-        self.max_capital = *money.iter().max().unwrap_or(&0);
-        self.mean = money.iter().sum::<Currency>() / self.people.count() as Currency;
-        self.stdev = money
-            .iter()
-            .map(|x| (x - self.mean).pow(2))
-            .sum::<Currency>() as f64
-            / ((n - 1) as f64);
-        self.stdev = self.stdev.sqrt();
+    pub fn finish(self) -> Report {
+        Report::from_model(self)
     }
 
-    #[inline]
     fn add_income(&mut self, human: usize) {
         self.people.add_income(human, self.options.income);
         self.fenwick.add(human, self.options.income)
     }
 
-    #[inline]
     fn add_new_human(&mut self) {
         self.people.add_new_human(self.options.initial_capital);
         self.fenwick.push(self.options.initial_capital);
     }
 
-    #[inline]
     fn sim_death(&mut self) {
         let someone_died = self.options.rng.gen_bool(self.options.p_death);
         if someone_died {
             let human = self.options.rng.gen_range(0..self.people.count());
 
-            self.people.money[human] = 0;
+            self.kill(human);
             self.died += 1;
         }
+    }
+
+    fn kill(&mut self, human: usize) {
+        let capital = self.people.money[human];
+
+        self.people.money[human] = 0;
+        self.fenwick.add(human, -capital);
+    }
+
+    // For debugging.
+    fn naive_weighted_index(&mut self) -> usize {
+        let total = self.people.money.iter().sum::<Currency>();
+        let need = self.options.rng.gen_range(1..=total);
+
+        let mut current = 0;
+
+        for i in 0..self.people.count() {
+            current += self.people.money[i];
+
+            if current >= need {
+                return i;
+            }
+        }
+
+        0
     }
 }
 
@@ -108,25 +117,67 @@ pub struct People {
 }
 
 impl People {
-    #[inline]
     pub fn with_capacity(n: usize) -> Self {
         People {
             money: Vec::with_capacity(n),
         }
     }
 
-    #[inline]
     pub fn count(&self) -> usize {
         self.money.len()
     }
 
-    #[inline]
     pub fn add_new_human(&mut self, capital: Currency) {
         self.money.push(capital);
     }
 
-    #[inline]
     pub fn add_income(&mut self, human: usize, income: Currency) {
         self.money[human] += income;
+    }
+}
+
+pub struct Report {
+    alive_count: usize,
+    dead_count: usize,
+
+    max: Currency,
+    mean: Currency,
+    stdev: f64,
+
+    money: Vec<Currency>,
+}
+
+impl Report {
+    pub fn from_model<R: RngCore, W: Weight>(m: Model<R, W>) -> Self {
+        let n = m.people.count();
+        let money = &m.people.money;
+        let mean = money.iter().sum::<Currency>() / n as Currency;
+
+        Self {
+            alive_count: money.iter().map(|x| x > &0).count(),
+            dead_count: money.iter().map(|x| x == &0).count(),
+
+            max: *money.iter().max().unwrap_or(&0),
+            mean,
+            stdev: (money.iter().map(|x| (x - mean).pow(2)).sum::<Currency>() as f64
+                / ((n - 1) as f64))
+                .sqrt(),
+
+            money: m.people.money,
+        }
+    }
+
+    pub fn print_verbose(&self) {
+        println!("Money: {:?}", self.money);
+
+        self.print();
+    }
+
+    pub fn print(&self) {
+        println!("Alive: {}", self.alive_count);
+        println!("Dead: {}", self.dead_count);
+        println!("Max capital: {}", self.max);
+        println!("Mean: {}", self.mean);
+        println!("Stdev: {}", self.stdev);
     }
 }
