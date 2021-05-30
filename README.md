@@ -9,7 +9,7 @@ This repo is just a small playground that was mainly inspired by a talk with my 
 ## Model
 
 The basic metaphor of the model is the goblins economy. Rules are simple:
-- Each _goblin_ in _population_ has some _gold_
+- Each _goblin_ has some _gold_
 - At simulation step:
   * A _random goblin_ receives an _income_
   * A _new goblin_ is born
