@@ -28,6 +28,8 @@ pub struct Model<R: RngCore, W: Weight> {
 
     pub max_capital: Currency,
     pub died: usize,
+    pub mean: Currency,
+    pub stdev: f64,
 }
 
 impl<R: RngCore> Model<R, Currency> {
@@ -42,6 +44,8 @@ impl<R: RngCore> Model<R, Currency> {
 
             max_capital: 1,
             died: 0,
+            mean: 0,
+            stdev: 0.0,
         }
     }
 
@@ -62,7 +66,17 @@ impl<R: RngCore> Model<R, Currency> {
 
     #[inline]
     pub fn finish(&mut self) {
-        self.recalculate_max();
+        let n = self.people.count();
+        let money = &self.people.money;
+
+        self.max_capital = *money.iter().max().unwrap_or(&0);
+        self.mean = money.iter().sum::<Currency>() / self.people.count() as Currency;
+        self.stdev = money
+            .iter()
+            .map(|x| (x - self.mean).pow(2))
+            .sum::<Currency>() as f64
+            / ((n - 1) as f64);
+        self.stdev = self.stdev.sqrt();
     }
 
     #[inline]
@@ -86,11 +100,6 @@ impl<R: RngCore> Model<R, Currency> {
             self.people.money[human] = 0;
             self.died += 1;
         }
-    }
-
-    #[inline]
-    fn recalculate_max(&mut self) {
-        self.max_capital = *self.people.money.iter().max().unwrap_or(&0);
     }
 }
 
