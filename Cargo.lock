@@ -222,6 +222,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "fenwick-tree"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b0428bcccd5f82887cdd4e5c569a298431daf3f43deb4803b4646aedd90195f"
+
+[[package]]
 name = "float-ord"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -553,6 +559,7 @@ dependencies = [
 name = "power-law-playground"
 version = "0.1.0"
 dependencies = [
+ "fenwick-tree",
  "plotters",
  "rand",
  "rand_xoshiro",
