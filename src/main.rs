@@ -15,7 +15,7 @@ fn main() {
         max_steps: STEPS,
 
         initial_capital: 1,
-        income: 4,
+        income: 1,
 
         rng: SplitMix64::seed_from_u64(1),
         p_death: 0.1,
