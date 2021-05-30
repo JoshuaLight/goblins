@@ -38,5 +38,5 @@ fn main() {
     println!("Max capital: {}", model.max_capital);
     println!("Died: {}", model.died);
     println!("---");
-    println!("Duration: {:#?} ms.", elapsed.whole_milliseconds());
+    println!("Duration: {} ms.", elapsed.whole_milliseconds());
 }
