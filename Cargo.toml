@@ -14,5 +14,6 @@ debug = 1
 rand = "0.8"
 rand_xoshiro = "0.6"
 time = "0.2"
-plotters = "0.3"
+gnuplot = "0.0.37"
 fenwick-tree = "0.1"
+counter = "0.5"

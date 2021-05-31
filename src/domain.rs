@@ -1,3 +1,8 @@
+use counter::Counter;
+use gnuplot::{
+    AxesCommon, Caption, Color, Figure,
+    PlotOption::{PointSize, PointSymbol},
+};
 use rand::{Rng, RngCore};
 
 use crate::random::{Weight, WeightVec};
@@ -15,25 +20,28 @@ pub struct ModelOptions<R: RngCore> {
     pub income: isize,
 
     pub rng: R,
+
+    pub p_income: f64,
+    pub p_birth: f64,
     pub p_death: f64,
 }
 
 pub struct Model<R: RngCore> {
     options: ModelOptions<R>,
 
+    money_backup: Vec<isize>,
     money: WeightVec<isize>,
     alive: WeightVec<isize>,
 }
 
 impl<R: RngCore> Model<R> {
     pub fn new(options: ModelOptions<R>) -> Self {
-        let max_steps = options.max_steps;
-
         Model {
-            options,
+            money_backup: Vec::with_capacity(options.max_steps),
+            money: WeightVec::with_capacity(options.max_steps),
+            alive: WeightVec::with_capacity(options.max_steps),
 
-            money: WeightVec::with_capacity(max_steps),
-            alive: WeightVec::with_capacity(max_steps),
+            options,
         }
     }
 
@@ -42,12 +50,35 @@ impl<R: RngCore> Model<R> {
     }
 
     pub fn sim(&mut self) {
-        let human = self.money.random_index(&mut self.options.rng);
-
-        self.add_income(human);
-        self.add_new_human();
-
+        self.sim_income();
+        self.sim_birth();
         self.sim_death();
+    }
+
+    fn sim_income(&mut self) {
+        let lucky = self.options.rng.gen_bool(self.options.p_income);
+        if lucky {
+            let human = self.money.random_index(&mut self.options.rng);
+
+            self.add_income(human);
+        }
+    }
+
+    fn sim_birth(&mut self) {
+        let born = self.options.rng.gen_bool(self.options.p_birth);
+        if born {
+            self.add_new_human();
+        }
+    }
+
+    fn sim_death(&mut self) {
+        let died = self.options.rng.gen_bool(self.options.p_death);
+        if died {
+            let human = self.money.random_index(&mut self.options.rng);
+
+            self.money.reset(human);
+            self.alive.reset(human);
+        }
     }
 
     pub fn finish(self) -> Report {
@@ -55,22 +86,14 @@ impl<R: RngCore> Model<R> {
     }
 
     fn add_new_human(&mut self) {
+        self.money_backup.push(self.options.initial_capital);
         self.money.push(self.options.initial_capital);
         self.alive.push(1);
     }
 
     fn add_income(&mut self, human: usize) {
+        self.money_backup[human] += self.options.income;
         self.money.add(human, self.options.income);
-    }
-
-    fn sim_death(&mut self) {
-        let someone_died = self.options.rng.gen_bool(self.options.p_death);
-        if someone_died {
-            let human = self.alive.random_index(&mut self.options.rng);
-
-            self.money.reset(human);
-            self.alive.reset(human);
-        }
     }
 }
 
@@ -87,13 +110,13 @@ pub struct Report {
 
 impl Report {
     pub fn from_model<R: RngCore>(m: Model<R>) -> Self {
-        let money = &m.money.vec;
+        let money = &m.money_backup;
         let n = money.len();
         let mean = money.iter().sum::<isize>() / n as isize;
 
         Self {
-            alive_count: money.iter().filter(|x| x > &&0).count(),
-            dead_count: money.iter().filter(|x| x == &&0).count(),
+            alive_count: m.money.vec.iter().filter(|x| x > &&0).count(),
+            dead_count: m.money.vec.iter().filter(|x| x == &&0).count(),
 
             max: *money.iter().max().unwrap_or(&0),
             mean,
@@ -101,7 +124,7 @@ impl Report {
                 / ((n - 1) as f64))
                 .sqrt(),
 
-            money: m.money.vec,
+            money: m.money_backup,
         }
     }
 
@@ -117,5 +140,19 @@ impl Report {
         println!("Max capital: {}", self.max);
         println!("Mean: {}", self.mean);
         println!("Stdev: {}", self.stdev);
+    }
+
+    pub fn draw(&self) {
+        let counter = self.money.iter().collect::<Counter<_>>();
+        let x: Vec<isize> = counter.keys().map(|x| **x).collect();
+        let y: Vec<isize> = counter.values().map(|x| *x as isize).collect();
+
+        let mut fg = Figure::new();
+
+        fg.axes2d()
+            .points(&x, &y, &[PointSymbol('O')])
+            .set_x_log(Some(10f64))
+            .set_y_log(Some(10f64));
+        fg.show().unwrap();
     }
 }
