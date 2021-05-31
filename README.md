@@ -47,9 +47,9 @@ Here are results as log log plot:
 
 ## Conclusion
 
-Both `B` and `D` simulations are most interesting because they imitate _"the rich get richer"_ thing. However, the most interesting part is probably in the difference between the two: seems like `B` produces a power law distribution (here is similar [log log plot](https://mathinsight.org/image/power_law_degree_distribution_scatter)) while `D` produces a power law distribution with _exponential cutoff_.
+Both `B` and `D` simulations are most interesting because they imitate _"the rich get richer"_ thing. However, the most notable part is probably in the difference between the two: seems like `B` produces a power law distribution (here is similar [log log plot](https://mathinsight.org/image/power_law_degree_distribution_scatter)) while `D` produces a power law distribution with _exponential cutoff_. Anyway, this means that these little goblins have something in common with populations of cities, links on the Internet, words frequencies, etc. 
 
-I have no idea how one can make a proof for this kind of stuff, but that was **definitely** an interesting adventure that is now can be considered as finished.
+I have no idea how one can make a proof for this kind of stuff but that was **definitely** an interesting adventure that is now can be considered as finished. 
 
 ## License
 
