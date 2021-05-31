@@ -40,5 +40,4 @@ They differ in the strategies for choosing a random goblin. Consider the followi
 | `D` | `Uniform` | `Weighted` |
 
 Hre are the results:
-
 ![Figure 1](doc/fg_1.png)
