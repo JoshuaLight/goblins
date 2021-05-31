@@ -136,12 +136,6 @@ impl Report {
         }
     }
 
-    pub fn print_verbose(&self) {
-        println!("Money: {:?}", self.money);
-
-        self.print();
-    }
-
     pub fn print(&self) {
         println!("Alive: {}", self.alive_count);
         println!("Dead: {}", self.dead_count);
