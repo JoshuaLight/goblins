@@ -9,10 +9,18 @@ This repo is just a small playground that was mainly inspired by a talk with my 
 ## Model
 
 The basic metaphor of the model is the goblins economy. Rules are simple:
-- Each goblin has some gold
-- Each simulation step:
-  * A _random alive_ goblin receives gold
-  * A new goblin is born
-  * A _random alive_ goblin dies
+- each goblin has some gold
+- each simulation step:
+  * a _random alive_ goblin receives gold
+  * a new goblin is born
+  * a _random alive_ goblin dies
 
-What makes this thing interesting is that the random is _weighted_: the more gold a goblin already has, the better chances he'll receive more.
+What makes this model interesting is how a _random_ goblin is chosen. Consider the following approaches:
+- chances are _equal_ between all goblins ([Discrete uniform distribution](https://en.wikipedia.org/wiki/Discrete_uniform_distribution))
+- chances are _weighted_, e.g., the more gold a goblin already has, the better chances he'll receive more ([_"the rich get richer"_](https://en.wikipedia.org/wiki/The_rich_get_richer_and_the_poor_get_poorer) or [Matthew effect](https://en.wikipedia.org/wiki/Matthew_effect))
+
+Choosing a different approach for either income or death results in different simulation results.
+
+## Simulation
+
+TODO.
