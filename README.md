@@ -32,7 +32,7 @@ All simulations have the following common options:
 - _income formula_: `x => x + 1`
 
 They differ in the strategies for choosing a random goblin. Consider the following table:
-| Label | Lucky (income) | Unlucky (death) |
+| Label | Lucky | Unlucky |
 | --- | --- | --- |
 | `A` | `Uniform` | `Uniform` |
 | `B` | `Weighted` | `Uniform` |
