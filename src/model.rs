@@ -188,6 +188,8 @@ impl Report {
         let y: Vec<isize> = counter.values().map(|x| *x as isize).collect();
 
         fg.points(&x, &y, &[PointSymbol('O'), Caption(caption)])
+            .set_size(0.5, 0.5)
+            .set_pos(0.25, 0.25)
             .set_x_log(Some(10f64))
             .set_y_log(Some(10f64));
     }
