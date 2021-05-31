@@ -1,4 +1,4 @@
-mod domain;
+mod model;
 mod random;
 
 use time::Instant;
@@ -6,7 +6,7 @@ use time::Instant;
 use rand::prelude::*;
 use rand_xoshiro::SplitMix64;
 
-use crate::domain::{Model, ModelOptions};
+use crate::model::{Model, ModelOptions};
 
 fn main() {
     const STEPS: usize = 20_000;
