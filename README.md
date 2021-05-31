@@ -37,7 +37,7 @@ They differ in the strategies for choosing a random goblin. Consider the followi
 | `A` | `Uniform` | `Uniform` |
 | `B` | `Weighted` | `Uniform` |
 | `C` | `Uniform` | `Weighted` |
-| `D` | `Uniform` | `Weighted` |
+| `D` | `Weighted` | `Weighted` |
 
 Hre are the results:
 ![Figure 1](doc/fg_1.png)
