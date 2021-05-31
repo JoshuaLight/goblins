@@ -6,22 +6,25 @@ use time::Instant;
 use rand::prelude::*;
 use rand_xoshiro::SplitMix64;
 
-use crate::model::{Model, ModelOptions};
+use crate::model::{Model, ModelOptions, RandomType};
 
 fn main() {
-    const STEPS: usize = 20_000;
+    const STEPS: usize = 1_000_000;
 
     let mut model = Model::new(ModelOptions {
         max_steps: STEPS,
 
-        initial_capital: 1,
-        income: 1,
+        initial_gold: 1,
+        f_income: Box::new(|x| x + 1),
 
         rng: SplitMix64::seed_from_u64(1),
 
-        p_income: 0.8,
-        p_birth: 0.8,
-        p_death: 0.21,
+        rnd_income: RandomType::Weighted,
+        rnd_death: RandomType::Weighted,
+
+        p_income: 1.0,
+        p_birth: 1.0,
+        p_death: 0.10,
     });
 
     let now = Instant::now();
