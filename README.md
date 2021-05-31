@@ -19,7 +19,7 @@ What makes this model interesting is how a _random_ goblin is chosen. Consider t
 - chances are _equal_ between all goblins ([Discrete uniform distribution](https://en.wikipedia.org/wiki/Discrete_uniform_distribution))
 - chances are _weighted_, e.g., the more gold a goblin already has, the better chances he'll receive more ([_"the rich get richer"_](https://en.wikipedia.org/wiki/The_rich_get_richer_and_the_poor_get_poorer) or [Matthew effect](https://en.wikipedia.org/wiki/Matthew_effect))
 
-Choosing a different approach for either income or death results in different simulation results.
+Each approach leads to different simulation results. Let's take look!
 
 ## Simulation
 
