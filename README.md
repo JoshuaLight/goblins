@@ -9,10 +9,10 @@ This repo is just a small playground that was mainly inspired by a talk with my 
 ## Model
 
 The basic metaphor of the model is the goblins economy. Rules are simple:
-- Each _goblin_ has some _gold_
-- At simulation step:
-  * A _random goblin_ receives an _income_
-  * A _new goblin_ is born
-  * A _random goblin_ dies
+- Each goblin has some gold
+- Each simulation step:
+  * A _random alive_ goblin receives gold
+  * A new goblin is born
+  * A _random alive_ goblin dies
 
-What makes this thing interesting is that random is _weighted_: the more gold a goblin already has, the better chances he'll receive more.
+What makes this thing interesting is that the random is _weighted_: the more gold a goblin already has, the better chances he'll receive more.
