@@ -2,13 +2,10 @@ use counter::Counter;
 use gnuplot::*;
 use rand::{Rng, RngCore};
 
+use crate::impl_weight;
 use crate::random::{Weight, WeightVec};
 
-impl Weight for isize {
-    fn one() -> Self {
-        1
-    }
-}
+impl_weight!(isize);
 
 /// Type of random that is used to choose a goblin.
 #[derive(Clone, Copy)]
