@@ -28,6 +28,8 @@ pub struct Model<R: RngCore> {
 
     money: WeightVec<isize>,
     alive: WeightVec<isize>,
+
+    dead_count: usize,
 }
 
 impl<R: RngCore> Model<R> {
@@ -37,6 +39,8 @@ impl<R: RngCore> Model<R> {
             alive: WeightVec::with_capacity(options.max_steps),
 
             options,
+
+            dead_count: 0,
         }
     }
 
@@ -48,14 +52,16 @@ impl<R: RngCore> Model<R> {
         self.sim_income();
         self.sim_birth();
         self.sim_death();
+        self.sim_ageing();
     }
 
     fn sim_income(&mut self) {
         let lucky = self.options.rng.gen_bool(self.options.p_income);
         if lucky {
             let human = self.money.random_index(&mut self.options.rng);
-
-            self.add_income(human);
+            if let Some(human) = human {
+                self.add_income(human);
+            }
         }
     }
 
@@ -69,10 +75,19 @@ impl<R: RngCore> Model<R> {
     fn sim_death(&mut self) {
         let died = self.options.rng.gen_bool(self.options.p_death);
         if died {
-            let human = self.money.random_index(&mut self.options.rng);
+            let human = self.alive.random_index(&mut self.options.rng);
+            if let Some(human) = human {
+                self.money.reset(human);
+                self.alive.reset(human);
 
-            self.money.reset(human);
-            self.alive.reset(human);
+                self.dead_count += 1;
+            }
+        }
+    }
+
+    fn sim_ageing(&mut self) {
+        for i in 0..self.alive.vec.len() {
+            self.alive.add(i, 1);
         }
     }
 
@@ -108,8 +123,8 @@ impl Report {
         let mean = money.iter().sum::<isize>() / n as isize;
 
         Self {
-            alive_count: m.money.vec.iter().filter(|x| x > &&0).count(),
-            dead_count: m.money.vec.iter().filter(|x| x == &&0).count(),
+            alive_count: n - m.dead_count,
+            dead_count: m.dead_count,
 
             max: *money.iter().max().unwrap_or(&0),
             mean,

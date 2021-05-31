@@ -22,7 +22,7 @@ pub trait Weight:
 }
 
 pub trait WeightedRandom<W: Weight> {
-    fn weighted_index<R: RngCore>(&self, rng: &mut R) -> usize;
+    fn weighted_index<R: RngCore>(&self, rng: &mut R) -> Option<usize>;
 }
 
 pub struct RngFenwickTree<W: Weight> {
@@ -49,8 +49,11 @@ impl<W: Weight> RngFenwickTree<W> {
 }
 
 impl<W: Weight> WeightedRandom<W> for RngFenwickTree<W> {
-    fn weighted_index<R: RngCore>(&self, rng: &mut R) -> usize {
+    fn weighted_index<R: RngCore>(&self, rng: &mut R) -> Option<usize> {
         let total = self.tree.sum(0..self.len).unwrap();
+        if total == W::default() {
+            return None;
+        }
 
         let mut sum = rng.gen_range(W::one()..=total);
         let mut a = 0;
@@ -68,7 +71,7 @@ impl<W: Weight> WeightedRandom<W> for RngFenwickTree<W> {
             }
         }
 
-        a
+        Some(a)
     }
 }
 
@@ -85,7 +88,7 @@ impl<W: Weight> WeightVec<W> {
         }
     }
 
-    pub fn random_index<R: RngCore>(&self, rng: &mut R) -> usize {
+    pub fn random_index<R: RngCore>(&self, rng: &mut R) -> Option<usize> {
         self.tree.weighted_index(rng)
     }
 
