@@ -39,5 +39,17 @@ They differ in the strategies for choosing a random goblin. Consider the followi
 | `C` | `Uniform` | `Weighted` |
 | `D` | `Weighted` | `Weighted` |
 
-Hre are the results:
-![Figure 1](doc/fg_1.png)
+Here are results:
+
+<div align="center">
+    <img src="https://github.com/JoshuaLight/goblins/blob/master/doc/fg_1.png" alt="Figure 1"></img>
+</div>
+
+
+## Conclusion
+
+Both `B` and `D` simulations are most interesting because they imitate _"the rich get richer"_ thing. However, the most interesting part is probably in the difference between the two: seems like `B` produces a power law distribution (here is similar [log log plot](https://mathinsight.org/image/power_law_degree_distribution_scatter)) while `D` produces a power law distribution with _exponential cutoff_. I have no clue how one can make a proof for this kind of stuff, but that was **definitely** an interesting adventure that is now can be considered as finished.
+
+## License
+
+Everything here is licensed under the [MIT](https://github.com/JoshuaLight/goblins/blob/master/LICENSE) license.
