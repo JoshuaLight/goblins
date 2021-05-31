@@ -1,6 +1,6 @@
-# power-law-playground
+# goblins
 
-_Simple simulation in Rust that produces a power law distribution._
+_A model of goblins economy that produces a power law distribution. In Rust._
 
 ## Overview
 
