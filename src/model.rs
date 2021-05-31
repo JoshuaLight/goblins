@@ -181,20 +181,14 @@ impl Report {
         println!("Dead: {}", self.dead_count);
     }
 
-    /// Draws a report into the new `gnuplot` figure.
-    pub fn draw(&self) {
+    /// Draws the report into the `gnuplot` axes.
+    pub fn draw_to(&self, fg: &mut Axes2D, caption: &str) {
         let counter = self.gold.iter().collect::<Counter<_>>();
         let x: Vec<isize> = counter.keys().map(|x| **x).collect();
         let y: Vec<isize> = counter.values().map(|x| *x as isize).collect();
 
-        let mut fg = Figure::new();
-
-        fg.axes2d()
-            .points(&x, &y, &[PointSymbol('O')])
-            .set_size(0.5, 0.5)
-            .set_pos(0.25, 0.25)
+        fg.points(&x, &y, &[PointSymbol('O'), Caption(caption)])
             .set_x_log(Some(10f64))
             .set_y_log(Some(10f64));
-        fg.show().unwrap();
     }
 }

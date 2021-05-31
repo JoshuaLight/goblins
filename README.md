@@ -23,4 +23,12 @@ Each approach leads to different simulation results. Let's take look!
 
 ## Simulation
 
+Each simulation have the following common options:
+- _steps_: `1 000 000`
+- _probability of birth: `1.0`
+- _probability of income: `1.0`
+- _probability of death_: `0.11`
+- _initial gold_: `1`
+- _income formula_: `x => x + 1`
+
 TODO.
