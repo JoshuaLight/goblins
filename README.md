@@ -39,7 +39,7 @@ They differ in the strategies for choosing a random goblin. Consider the followi
 | `C` | `Uniform` | `Weighted` |
 | `D` | `Weighted` | `Weighted` |
 
-Here are results:
+Here are results as log log plot:
 
 <div align="center">
     <img src="https://github.com/JoshuaLight/goblins/blob/master/doc/fg_1.png" alt="Figure 1"></img>
