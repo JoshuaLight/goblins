@@ -47,7 +47,9 @@ Here are results:
 
 ## Conclusion
 
-Both `B` and `D` simulations are most interesting because they imitate _"the rich get richer"_ thing. However, the most interesting part is probably in the difference between the two: seems like `B` produces a power law distribution (here is similar [log log plot](https://mathinsight.org/image/power_law_degree_distribution_scatter)) while `D` produces a power law distribution with _exponential cutoff_. I have no clue how one can make a proof for this kind of stuff, but that was **definitely** an interesting adventure that is now can be considered as finished.
+Both `B` and `D` simulations are most interesting because they imitate _"the rich get richer"_ thing. However, the most interesting part is probably in the difference between the two: seems like `B` produces a power law distribution (here is similar [log log plot](https://mathinsight.org/image/power_law_degree_distribution_scatter)) while `D` produces a power law distribution with _exponential cutoff_.
+
+I have no idea how one can make a proof for this kind of stuff, but that was **definitely** an interesting adventure that is now can be considered as finished.
 
 ## License
 
