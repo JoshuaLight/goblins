@@ -7,13 +7,13 @@ use crate::random::{Weight, WeightVec};
 
 impl_weight!(isize);
 
-/// Type of random that is used to choose a goblin.
+/// Type of random strategy that is used to choose a goblin.
 #[derive(Clone, Copy)]
-pub enum RandomType {
-    /// A random goblin is chosen uniformly from all alive ones.
+pub enum RandomStrategy {
+    /// A goblin is chosen uniformly from all alive ones.
     Uniform,
 
-    /// A random goblin is chosen with its gold as weight from all alive ones.
+    /// A goblin is chosen with its gold as weight from all alive ones.
     Weighted,
 }
 
@@ -32,11 +32,11 @@ pub struct ModelOptions<R: RngCore> {
     /// Random generator.
     pub rng: R,
 
-    /// Type of random for choosing a lucky goblin that'll receive gold.
-    pub rnd_income: RandomType,
+    /// Type of random strategy for choosing a lucky goblin that'll receive gold.
+    pub rnd_income: RandomStrategy,
 
-    /// Type of random for choosing a dead goblin.
-    pub rnd_death: RandomType,
+    /// Type of random strategy for choosing a dead goblin.
+    pub rnd_death: RandomStrategy,
 
     /// Probability of a goblin receiving an income.
     pub p_income: f64,
@@ -141,10 +141,10 @@ impl<R: RngCore> Model<R> {
     }
 
     /// A random goblin chosen using a random type `t`.
-    fn random_goblin(&mut self, t: RandomType) -> Option<usize> {
+    fn random_goblin(&mut self, t: RandomStrategy) -> Option<usize> {
         match t {
-            RandomType::Uniform => self.alive.random_index(&mut self.options.rng),
-            RandomType::Weighted => self.gold.random_index(&mut self.options.rng),
+            RandomStrategy::Uniform => self.alive.random_index(&mut self.options.rng),
+            RandomStrategy::Weighted => self.gold.random_index(&mut self.options.rng),
         }
     }
 }

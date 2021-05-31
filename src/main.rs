@@ -7,7 +7,7 @@ use time::Instant;
 use rand::prelude::*;
 use rand_xoshiro::SplitMix64;
 
-use crate::model::{Model, ModelOptions, RandomType};
+use crate::model::{Model, ModelOptions, RandomStrategy};
 
 fn main() {
     const STEPS: usize = 1_000_000;
@@ -17,23 +17,23 @@ fn main() {
 
     let model_a = Model::new(new_options::<SplitMix64>(
         STEPS,
-        RandomType::Uniform,
-        RandomType::Uniform,
+        RandomStrategy::Uniform,
+        RandomStrategy::Uniform,
     ));
     let model_b = Model::new(new_options::<SplitMix64>(
         STEPS,
-        RandomType::Weighted,
-        RandomType::Uniform,
+        RandomStrategy::Weighted,
+        RandomStrategy::Uniform,
     ));
     let model_c = Model::new(new_options::<SplitMix64>(
         STEPS,
-        RandomType::Uniform,
-        RandomType::Weighted,
+        RandomStrategy::Uniform,
+        RandomStrategy::Weighted,
     ));
     let model_d = Model::new(new_options::<SplitMix64>(
         STEPS,
-        RandomType::Weighted,
-        RandomType::Weighted,
+        RandomStrategy::Weighted,
+        RandomStrategy::Weighted,
     ));
 
     simulate(model_a, STEPS, axes, "A");
@@ -46,8 +46,8 @@ fn main() {
 
 fn new_options<R: RngCore + SeedableRng>(
     steps: usize,
-    rnd_income: RandomType,
-    rnd_death: RandomType,
+    rnd_income: RandomStrategy,
+    rnd_death: RandomStrategy,
 ) -> ModelOptions<R> {
     ModelOptions {
         max_steps: steps,
