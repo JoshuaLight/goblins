@@ -9,19 +9,19 @@ use rand_xoshiro::SplitMix64;
 use crate::domain::{Model, ModelOptions};
 
 fn main() {
-    const STEPS: usize = 10_000_000;
+    const STEPS: usize = 1_000_000;
 
     let mut model = Model::new(ModelOptions {
         max_steps: STEPS,
 
         initial_capital: 1,
-        income: 1,
+        income: 100,
 
         rng: SplitMix64::seed_from_u64(1),
 
-        p_income: 0.7,
-        p_birth: 0.7,
-        p_death: 0.1,
+        p_income: 1.0,
+        p_birth: 1.0,
+        p_death: 0.15,
     });
 
     let now = Instant::now();

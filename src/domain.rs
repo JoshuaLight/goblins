@@ -1,8 +1,5 @@
 use counter::Counter;
-use gnuplot::{
-    AxesCommon, Caption, Color, Figure,
-    PlotOption::{PointSize, PointSymbol},
-};
+use gnuplot::*;
 use rand::{Rng, RngCore};
 
 use crate::random::{Weight, WeightVec};
@@ -29,7 +26,6 @@ pub struct ModelOptions<R: RngCore> {
 pub struct Model<R: RngCore> {
     options: ModelOptions<R>,
 
-    money_backup: Vec<isize>,
     money: WeightVec<isize>,
     alive: WeightVec<isize>,
 }
@@ -37,7 +33,6 @@ pub struct Model<R: RngCore> {
 impl<R: RngCore> Model<R> {
     pub fn new(options: ModelOptions<R>) -> Self {
         Model {
-            money_backup: Vec::with_capacity(options.max_steps),
             money: WeightVec::with_capacity(options.max_steps),
             alive: WeightVec::with_capacity(options.max_steps),
 
@@ -86,13 +81,11 @@ impl<R: RngCore> Model<R> {
     }
 
     fn add_new_human(&mut self) {
-        self.money_backup.push(self.options.initial_capital);
         self.money.push(self.options.initial_capital);
         self.alive.push(1);
     }
 
     fn add_income(&mut self, human: usize) {
-        self.money_backup[human] += self.options.income;
         self.money.add(human, self.options.income);
     }
 }
@@ -110,7 +103,7 @@ pub struct Report {
 
 impl Report {
     pub fn from_model<R: RngCore>(m: Model<R>) -> Self {
-        let money = &m.money_backup;
+        let money = &m.money.vec;
         let n = money.len();
         let mean = money.iter().sum::<isize>() / n as isize;
 
@@ -124,7 +117,7 @@ impl Report {
                 / ((n - 1) as f64))
                 .sqrt(),
 
-            money: m.money_backup,
+            money: m.money.vec,
         }
     }
 
@@ -151,6 +144,8 @@ impl Report {
 
         fg.axes2d()
             .points(&x, &y, &[PointSymbol('O')])
+            .set_size(0.5, 0.5)
+            .set_pos(0.25, 0.25)
             .set_x_log(Some(10f64))
             .set_y_log(Some(10f64));
         fg.show().unwrap();

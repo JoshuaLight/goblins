@@ -102,7 +102,8 @@ impl<W: Weight> WeightVec<W> {
     pub fn reset(&mut self, i: usize) {
         let x = self.vec[i];
 
-        self.vec[i] = W::default();
+        // Don't want to lost the value in vec.
+        //self.vec[i] = W::default();
         self.tree.add(i, -x);
     }
 }
