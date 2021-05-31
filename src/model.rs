@@ -32,10 +32,10 @@ pub struct ModelOptions<R: RngCore> {
     /// Random generator.
     pub rng: R,
 
-    /// Type of random strategy for choosing a lucky goblin that'll receive gold.
+    /// Random strategy for choosing a lucky goblin that'll receive gold.
     pub rnd_income: RandomStrategy,
 
-    /// Type of random strategy for choosing a dead goblin.
+    /// Random strategy for choosing a dead goblin.
     pub rnd_death: RandomStrategy,
 
     /// Probability of a goblin receiving an income.
