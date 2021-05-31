@@ -10,7 +10,7 @@ This repo is just a small playground that was mainly inspired by a talk with my 
 
 The basic metaphor of the model is the goblins economy. Rules are simple:
 - each goblin has some gold
-- each simulation step:
+- at each simulation step:
   * a _random alive_ goblin receives gold (_lucky_ one)
   * a new goblin is born
   * a _random alive_ goblin dies (_unlucky_ one)
